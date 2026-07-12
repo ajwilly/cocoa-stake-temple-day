@@ -59,7 +59,10 @@ export default function AdminRoster() {
             <h1 style={{ margin: '0 0 4px', fontFamily: serif, fontWeight: 500, fontSize: 30, color: C.navy }}>
               Cocoa Stake Temple Day roster
             </h1>
-            <p style={{ margin: 0, fontSize: 14, color: C.mute }}>Fort Lauderdale Florida Temple · Saturday, November 14, 2026</p>
+            <p style={{ margin: 0, fontSize: 14, color: C.mute }}>
+              <span className="nowrap">Fort Lauderdale Florida Temple</span>{' · '}
+              <span className="nowrap">Saturday, November 14, 2026</span>
+            </p>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
@@ -78,7 +81,7 @@ export default function AdminRoster() {
 
         {error && <p style={{ color: '#A33B2E', fontSize: 14, margin: '16px 0 0' }}>{error}</p>}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, margin: '22px 0' }}>
+        <div className="admin-stat-grid" style={{ margin: '22px 0' }}>
           {[
             [totals.seats, 'seats offered'],
             [totals.riders, 'riders needing seats'],

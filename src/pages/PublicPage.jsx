@@ -96,7 +96,8 @@ export default function PublicPage() {
             No One Rides Alone
           </h1>
           <p style={{ margin: 0, fontSize: 16, color: C.mute }}>
-            Fort Lauderdale Florida Temple · Saturday, November 14, 2026
+            <span className="nowrap">Fort Lauderdale Florida Temple</span>{' · '}
+            <span className="nowrap">Saturday, November 14, 2026</span>
           </p>
           <p style={{ margin: '14px auto 0', maxWidth: 480, fontSize: 15, lineHeight: 1.55, color: C.ink }}>
             Offer a seat or find a ride with members of your ward. Bringing children? Sign up to trade off --
@@ -104,7 +105,7 @@ export default function PublicPage() {
           </p>
         </header>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, margin: '26px 0' }}>
+        <div className="stat-grid" style={{ margin: '26px 0' }}>
           {[
             [totals.seatsOffered, 'seats offered'],
             [totals.ridersNeedingSeats, 'riders needing seats'],

@@ -112,7 +112,7 @@ export default function SignupForm({ onSaved }) {
         <input style={input} value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="First and last name" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div className="form-grid-2">
         <div style={field}>
           <label style={label}>Phone</label>
           <input style={input} type="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="(321) 555-0100" />
@@ -129,7 +129,7 @@ export default function SignupForm({ onSaved }) {
 
       {form.role === 'driver' ? (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="form-grid-2">
             <div style={field}>
               <label style={label}>Open seats</label>
               <input style={input} type="number" min="1" max="14" value={form.seats} onChange={(e) => set('seats', e.target.value)} />
@@ -156,7 +156,7 @@ export default function SignupForm({ onSaved }) {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'end' }}>
+      <div className="form-grid-2" style={{ alignItems: 'end' }}>
         <div style={field}>
           <label style={label}>Children coming with you</label>
           <input style={input} type="number" min="0" max="12" value={form.kids} onChange={(e) => set('kids', e.target.value)} />
