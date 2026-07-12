@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { UNITS, C, serif } from '../lib/theme'
 import { label } from '../lib/formStyles'
-import { downloadCsv } from '../lib/csv'
+import { downloadCsv, todayEasternDateStamp } from '../lib/csv'
 
 export default function AdminRoster() {
   const [rows, setRows] = useState([])
@@ -65,7 +65,7 @@ export default function AdminRoster() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
-              onClick={() => downloadCsv(`cocoa-stake-temple-day-roster-${new Date().toISOString().slice(0, 10)}.csv`, rows)}
+              onClick={() => downloadCsv(`cocoa-stake-temple-day-roster-${todayEasternDateStamp()}.csv`, rows)}
               disabled={rows.length === 0}
               style={btnStyle(C.gold, C.navyDeep)}
             >

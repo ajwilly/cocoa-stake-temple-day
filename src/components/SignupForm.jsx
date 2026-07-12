@@ -71,7 +71,8 @@ export default function SignupForm({ onSaved }) {
 
     if (failure) {
       console.error('Sign-up failed after retry:', failure)
-      setError("Couldn't save your sign-up. Please check your connection and try again.")
+      const detail = failure?.message || failure?.error_description || String(failure)
+      setError(`Couldn't save your sign-up. Please try again. (${detail})`)
       return
     }
 

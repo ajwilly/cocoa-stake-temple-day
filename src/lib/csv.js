@@ -1,5 +1,34 @@
+// The event is in Florida, so timestamps are always shown in Eastern Time
+// (with the correct EST/EDT offset for the date) no matter what timezone
+// the admin's own browser happens to be in.
+const EASTERN_TIME_ZONE = 'America/New_York'
+const easternFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: EASTERN_TIME_ZONE,
+  dateStyle: 'short',
+  timeStyle: 'short',
+})
+
+function formatSignedUpAt(value) {
+  if (!value) return ''
+  return `${easternFormatter.format(new Date(value))} ET`
+}
+
+const easternDateParts = new Intl.DateTimeFormat('en-CA', {
+  timeZone: EASTERN_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+// en-CA formats as YYYY-MM-DD. Using the Eastern date (not the admin's
+// browser-local date) keeps the exported filename correct even if a
+// leader opens the roster while traveling in a different timezone.
+export function todayEasternDateStamp() {
+  return easternDateParts.format(new Date())
+}
+
 const COLUMNS = [
-  ['created_at', 'Signed up'],
+  ['created_at', 'Signed up (Eastern Time)', formatSignedUpAt],
   ['role', 'Role'],
   ['unit', 'Ward'],
   ['name', 'Name'],
@@ -19,7 +48,9 @@ function escapeCell(value) {
 
 export function rowsToCsv(rows) {
   const header = COLUMNS.map(([, label]) => escapeCell(label)).join(',')
-  const lines = rows.map((row) => COLUMNS.map(([key]) => escapeCell(row[key])).join(','))
+  const lines = rows.map((row) =>
+    COLUMNS.map(([key, , formatter]) => escapeCell(formatter ? formatter(row[key]) : row[key])).join(',')
+  )
   return [header, ...lines].join('\r\n')
 }
 
