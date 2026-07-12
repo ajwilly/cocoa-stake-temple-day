@@ -1,5 +1,7 @@
 -- Cocoa Stake Temple Day carpool sign-up
 -- Paste this whole file into the Supabase SQL Editor and run it once.
+-- Safe to re-run: it also cleans up the retired children/childcare fields
+-- from any project set up before that was removed.
 
 create extension if not exists pgcrypto;
 
@@ -14,10 +16,13 @@ create table if not exists public.signups (
   depart_time text,
   depart_place text,
   party int not null default 1,
-  kids int not null default 0,
-  can_watch_kids boolean not null default false,
   needs text
 );
+
+-- Retired: this app no longer tracks children counts or childcare
+-- volunteers (liability/legal exposure around unlicensed childcare).
+alter table public.signups drop column if exists kids;
+alter table public.signups drop column if exists can_watch_kids;
 
 alter table public.signups enable row level security;
 
@@ -54,13 +59,16 @@ grant select, delete on public.signups to authenticated;
 -- runs with the privileges of the function owner (bypassing RLS) but it
 -- only ever returns per-unit sums -- never a name, phone, or note. This is
 -- the ONLY way the anon/public page reads data from the signups table.
-create or replace function public.get_ward_counts()
+-- Dropped and recreated (not CREATE OR REPLACE) because its return columns
+-- changed when children_coming/childcare_helpers were retired -- Postgres
+-- won't let you change a function's return type in place.
+drop function if exists public.get_ward_counts();
+
+create function public.get_ward_counts()
 returns table (
   unit text,
   seats_offered bigint,
-  riders_needing_seats bigint,
-  children_coming bigint,
-  childcare_helpers bigint
+  riders_needing_seats bigint
 )
 language sql
 security definer
@@ -70,9 +78,7 @@ as $$
   select
     unit,
     coalesce(sum(seats) filter (where role = 'driver'), 0) as seats_offered,
-    coalesce(sum(party) filter (where role = 'rider'), 0) as riders_needing_seats,
-    coalesce(sum(kids), 0) as children_coming,
-    coalesce(count(*) filter (where can_watch_kids), 0) as childcare_helpers
+    coalesce(sum(party) filter (where role = 'rider'), 0) as riders_needing_seats
   from public.signups
   group by unit;
 $$;

@@ -12,8 +12,6 @@ const emptyForm = {
   departTime: '',
   departPlace: '',
   party: 1,
-  kids: 0,
-  canWatchKids: false,
   needs: '',
 }
 
@@ -25,6 +23,15 @@ export default function SignupForm({ onSaved }) {
 
   function set(k, v) {
     setForm((f) => ({ ...f, [k]: v }))
+  }
+
+  async function insertOnce(row) {
+    try {
+      const { error: insertError } = await supabase.from('signups').insert(row)
+      return insertError ?? null
+    } catch (thrown) {
+      return thrown
+    }
   }
 
   async function submit() {
@@ -48,15 +55,22 @@ export default function SignupForm({ onSaved }) {
       depart_time: form.role === 'driver' ? form.departTime || null : null,
       depart_place: form.role === 'driver' ? form.departPlace || null : null,
       party: form.role === 'rider' ? Number(form.party) || 1 : 1,
-      kids: Number(form.kids) || 0,
-      can_watch_kids: form.canWatchKids,
       needs: form.needs.trim() || null,
     }
 
-    const { error: insertError } = await supabase.from('signups').insert(row)
+    // Mobile data connections drop more often than wifi -- retry once
+    // before giving up, so a one-second blip doesn't cost someone their
+    // sign-up.
+    let failure = await insertOnce(row)
+    if (failure) {
+      await new Promise((resolve) => setTimeout(resolve, 1200))
+      failure = await insertOnce(row)
+    }
+
     setSaving(false)
 
-    if (insertError) {
+    if (failure) {
+      console.error('Sign-up failed after retry:', failure)
       setError("Couldn't save your sign-up. Please check your connection and try again.")
       return
     }
@@ -155,24 +169,6 @@ export default function SignupForm({ onSaved }) {
           <input style={input} type="number" min="1" max="12" value={form.party} onChange={(e) => set('party', e.target.value)} />
         </div>
       )}
-
-      <div className="form-grid-2" style={{ alignItems: 'end' }}>
-        <div style={field}>
-          <label style={label}>Children coming with you</label>
-          <input style={input} type="number" min="0" max="12" value={form.kids} onChange={(e) => set('kids', e.target.value)} />
-        </div>
-        <div style={{ ...field, paddingBottom: 2 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: C.ink, cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={form.canWatchKids}
-              onChange={(e) => set('canWatchKids', e.target.checked)}
-              style={{ width: 18, height: 18, accentColor: C.navy }}
-            />
-            I can watch children during a session
-          </label>
-        </div>
-      </div>
 
       <div style={field}>
         <label style={label}>Special needs or notes</label>

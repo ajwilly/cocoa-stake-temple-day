@@ -20,8 +20,6 @@ export default function PublicPage() {
           {
             seatsOffered: Number(row.seats_offered) || 0,
             ridersNeedingSeats: Number(row.riders_needing_seats) || 0,
-            childrenComing: Number(row.children_coming) || 0,
-            childcareHelpers: Number(row.childcare_helpers) || 0,
           },
         ])
       )
@@ -38,10 +36,8 @@ export default function PublicPage() {
     (acc, c) => ({
       seatsOffered: acc.seatsOffered + c.seatsOffered,
       ridersNeedingSeats: acc.ridersNeedingSeats + c.ridersNeedingSeats,
-      childrenComing: acc.childrenComing + c.childrenComing,
-      childcareHelpers: acc.childcareHelpers + c.childcareHelpers,
     }),
-    { seatsOffered: 0, ridersNeedingSeats: 0, childrenComing: 0, childcareHelpers: 0 }
+    { seatsOffered: 0, ridersNeedingSeats: 0 }
   )
 
   function handleSaved(unit) {
@@ -100,8 +96,7 @@ export default function PublicPage() {
             <span className="nowrap">Saturday, November 14, 2026</span>
           </p>
           <p style={{ margin: '14px auto 0', maxWidth: 480, fontSize: 15, lineHeight: 1.55, color: C.ink }}>
-            Offer a seat or find a ride with members of your ward. Bringing children? Sign up to trade off --
-            someone watches the little ones while you're inside, and you return the favor.
+            Offer a seat or find a ride with members of your ward for Temple Day.
           </p>
         </header>
 
@@ -109,8 +104,6 @@ export default function PublicPage() {
           {[
             [totals.seatsOffered, 'seats offered'],
             [totals.ridersNeedingSeats, 'riders needing seats'],
-            [totals.childrenComing, 'children coming'],
-            [totals.childcareHelpers, 'childcare helpers'],
           ].map(([n, t]) => (
             <div key={t} style={{ background: '#fff', border: `1px solid ${C.line}`, borderRadius: 12, padding: '12px 6px', textAlign: 'center' }}>
               <div style={{ fontFamily: serif, fontSize: 26, color: C.navy }}>{loading ? '–' : n}</div>

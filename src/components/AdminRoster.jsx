@@ -46,8 +46,6 @@ export default function AdminRoster() {
   const totals = {
     seats: drivers.reduce((n, d) => n + (d.seats || 0), 0),
     riders: riders.reduce((n, r) => n + (r.party || 0), 0),
-    kids: rows.reduce((n, r) => n + (r.kids || 0), 0),
-    watchers: rows.filter((r) => r.can_watch_kids).length,
     signups: rows.length,
   }
 
@@ -85,8 +83,6 @@ export default function AdminRoster() {
           {[
             [totals.seats, 'seats offered'],
             [totals.riders, 'riders needing seats'],
-            [totals.kids, 'children coming'],
-            [totals.watchers, 'childcare helpers'],
             [totals.signups, 'total sign-ups'],
           ].map(([n, t]) => (
             <div key={t} style={{ background: '#fff', border: `1px solid ${C.line}`, borderRadius: 12, padding: '12px 6px', textAlign: 'center' }}>
@@ -180,18 +176,6 @@ function Entry({ row, onDelete, confirming, onConfirm, onCancel }) {
         ) : (
           <>
             {row.party} rider{row.party === 1 ? '' : 's'}
-          </>
-        )}
-        {row.kids > 0 && (
-          <>
-            {' '}
-            · {row.kids} child{row.kids === 1 ? '' : 'ren'}
-          </>
-        )}
-        {row.can_watch_kids && (
-          <>
-            {' '}
-            · <span style={{ color: C.green, fontWeight: 600 }}>can watch kids</span>
           </>
         )}
       </div>

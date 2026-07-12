@@ -17,7 +17,7 @@ export default function WardCountsBoard({ counts, loading, openUnit, setOpenUnit
         const counts = byUnit[u]
         const open = openUnit === u
         const covered = counts.seatsOffered >= counts.ridersNeedingSeats && counts.ridersNeedingSeats > 0
-        const hasAny = counts.seatsOffered > 0 || counts.ridersNeedingSeats > 0 || counts.childrenComing > 0
+        const hasAny = counts.seatsOffered > 0 || counts.ridersNeedingSeats > 0
 
         return (
           <div key={u} style={{ background: '#fff', border: `1px solid ${C.line}`, borderRadius: 12, marginBottom: 10, overflow: 'hidden' }}>
@@ -55,8 +55,6 @@ export default function WardCountsBoard({ counts, loading, openUnit, setOpenUnit
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                     <Stat label="seats offered" value={counts.seatsOffered} />
                     <Stat label="riders needing seats" value={counts.ridersNeedingSeats} />
-                    <Stat label="children coming" value={counts.childrenComing} />
-                    <Stat label="childcare helpers" value={counts.childcareHelpers} />
                   </div>
                 )}
               </div>
@@ -78,5 +76,5 @@ function Stat({ label: text, value }) {
 }
 
 function emptyCounts() {
-  return { seatsOffered: 0, ridersNeedingSeats: 0, childrenComing: 0, childcareHelpers: 0 }
+  return { seatsOffered: 0, ridersNeedingSeats: 0 }
 }

@@ -8,8 +8,6 @@ const COLUMNS = [
   ['depart_time', 'Leaving at'],
   ['depart_place', 'Leaving from'],
   ['party', 'People in group'],
-  ['kids', 'Children'],
-  ['can_watch_kids', 'Can watch kids'],
   ['needs', 'Notes'],
 ]
 
