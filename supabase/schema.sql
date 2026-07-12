@@ -28,6 +28,7 @@ alter table public.signups enable row level security;
 
 -- Public visitors may only ever create a signup row. They cannot read,
 -- edit, or delete any row -- not their own, not anyone else's.
+drop policy if exists "anon can insert signups" on public.signups;
 create policy "anon can insert signups"
   on public.signups
   for insert
@@ -37,12 +38,14 @@ create policy "anon can insert signups"
 -- Signed-in admins (created in Authentication > Users) can see and remove
 -- every row. There is deliberately no update policy -- nobody edits an
 -- existing signup, they just delete and re-submit.
+drop policy if exists "admins can read all signups" on public.signups;
 create policy "admins can read all signups"
   on public.signups
   for select
   to authenticated
   using (true);
 
+drop policy if exists "admins can delete all signups" on public.signups;
 create policy "admins can delete all signups"
   on public.signups
   for delete
