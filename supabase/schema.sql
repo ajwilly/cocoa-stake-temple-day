@@ -35,9 +35,19 @@ create policy "anon can insert signups"
   to anon
   with check (true);
 
--- Signed-in admins (created in Authentication > Users) can see and remove
--- every row. There is deliberately no update policy -- nobody edits an
--- existing signup, they just delete and re-submit.
+-- Signed-in admins (created in Authentication > Users) can see, remove,
+-- AND add rows -- an admin browsing the public page on the same device
+-- they logged in on still submits as "authenticated", not "anon", so this
+-- needs its own insert policy or their sign-up silently gets rejected.
+-- There is deliberately no update policy -- nobody edits an existing
+-- signup, they just delete and re-submit.
+drop policy if exists "admins can insert signups" on public.signups;
+create policy "admins can insert signups"
+  on public.signups
+  for insert
+  to authenticated
+  with check (true);
+
 drop policy if exists "admins can read all signups" on public.signups;
 create policy "admins can read all signups"
   on public.signups
@@ -53,10 +63,10 @@ create policy "admins can delete all signups"
   using (true);
 
 -- Table-level grants, matched to the RLS policies above: anon can only
--- ever insert, authenticated (admin) can only ever read + delete.
+-- ever insert, authenticated (admin) can insert + read + delete.
 revoke all on public.signups from anon, authenticated;
 grant insert on public.signups to anon;
-grant select, delete on public.signups to authenticated;
+grant insert, select, delete on public.signups to authenticated;
 
 -- Public counts-only aggregate. This is a SECURITY DEFINER function, so it
 -- runs with the privileges of the function owner (bypassing RLS) but it
