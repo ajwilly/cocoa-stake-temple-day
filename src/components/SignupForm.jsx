@@ -12,7 +12,7 @@ const emptyForm = {
   reservationTime: '',
   departTime: '',
   departPlace: '',
-  party: 1,
+  party: '',
   needs: '',
 }
 
@@ -47,6 +47,10 @@ export default function SignupForm({ onSaved }) {
     }
     if (form.role === 'driver' && (!form.seats || Number(form.seats) < 1)) {
       setError('Please enter how many open seats you have.')
+      return
+    }
+    if (form.role === 'rider' && (!form.party || Number(form.party) < 1)) {
+      setError('Please enter the total number of people needing a ride.')
       return
     }
 
@@ -190,8 +194,16 @@ export default function SignupForm({ onSaved }) {
         </>
       ) : (
         <div style={field}>
-          <label style={label}>People in your group (including you)</label>
-          <input style={input} type="number" min="1" max="12" value={form.party} onChange={(e) => set('party', e.target.value)} />
+          <label style={label}>Total number of people needing a ride?</label>
+          <input
+            style={input}
+            type="number"
+            min="1"
+            max="12"
+            value={form.party}
+            onChange={(e) => set('party', e.target.value)}
+            placeholder="#"
+          />
         </div>
       )}
 
