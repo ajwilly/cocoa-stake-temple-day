@@ -178,6 +178,7 @@ function Entry({ row, onDelete, confirming, onConfirm, onCancel }) {
             {row.party} rider{row.party === 1 ? '' : 's'}
           </>
         )}
+        {row.reservation_time && <> · reservation at {row.reservation_time}</>}
       </div>
       {row.needs && <div style={{ fontSize: 13, color: C.ink, marginTop: 4, fontStyle: 'italic' }}>&ldquo;{row.needs}&rdquo;</div>}
       <div style={{ marginTop: 6 }}>

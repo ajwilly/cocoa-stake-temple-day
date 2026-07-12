@@ -33,6 +33,7 @@ const COLUMNS = [
   ['unit', 'Ward'],
   ['name', 'Name'],
   ['phone', 'Phone'],
+  ['reservation_time', 'Temple reservation time'],
   ['seats', 'Seats offered'],
   ['depart_time', 'Leaving at'],
   ['depart_place', 'Leaving from'],

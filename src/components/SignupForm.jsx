@@ -8,7 +8,8 @@ const emptyForm = {
   name: '',
   phone: '',
   unit: UNITS[0],
-  seats: 3,
+  seats: '',
+  reservationTime: '',
   departTime: '',
   departPlace: '',
   party: 1,
@@ -44,6 +45,10 @@ export default function SignupForm({ onSaved }) {
       setError("Please enter a phone number so your ward can coordinate.")
       return
     }
+    if (form.role === 'driver' && (!form.seats || Number(form.seats) < 1)) {
+      setError('Please enter how many open seats you have.')
+      return
+    }
 
     setSaving(true)
     const row = {
@@ -52,6 +57,7 @@ export default function SignupForm({ onSaved }) {
       phone: form.phone.trim(),
       unit: form.unit,
       seats: form.role === 'driver' ? Number(form.seats) || 0 : 0,
+      reservation_time: form.reservationTime || null,
       depart_time: form.role === 'driver' ? form.departTime || null : null,
       depart_place: form.role === 'driver' ? form.departPlace || null : null,
       party: form.role === 'rider' ? Number(form.party) || 1 : 1,
@@ -142,12 +148,30 @@ export default function SignupForm({ onSaved }) {
         </div>
       </div>
 
+      <div style={field}>
+        <label style={label}>Temple reservation time</label>
+        <input
+          style={input}
+          type="time"
+          value={form.reservationTime}
+          onChange={(e) => set('reservationTime', e.target.value)}
+        />
+      </div>
+
       {form.role === 'driver' ? (
         <>
           <div className="form-grid-2">
             <div style={field}>
               <label style={label}>Open seats</label>
-              <input style={input} type="number" min="1" max="14" value={form.seats} onChange={(e) => set('seats', e.target.value)} />
+              <input
+                style={input}
+                type="number"
+                min="1"
+                max="14"
+                value={form.seats}
+                onChange={(e) => set('seats', e.target.value)}
+                placeholder="#"
+              />
             </div>
             <div style={field}>
               <label style={label}>Leaving at</label>
@@ -177,7 +201,7 @@ export default function SignupForm({ onSaved }) {
           style={{ ...input, minHeight: 70, resize: 'vertical' }}
           value={form.needs}
           onChange={(e) => set('needs', e.target.value)}
-          placeholder="Wheelchair space, car seat needed, dietary needs, preferred session time…"
+          placeholder="Wheelchair space, car seat needed, dietary needs…"
         />
       </div>
 

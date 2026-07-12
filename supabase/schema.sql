@@ -16,13 +16,18 @@ create table if not exists public.signups (
   depart_time text,
   depart_place text,
   party int not null default 1,
-  needs text
+  needs text,
+  reservation_time text
 );
 
 -- Retired: this app no longer tracks children counts or childcare
 -- volunteers (liability/legal exposure around unlicensed childcare).
 alter table public.signups drop column if exists kids;
 alter table public.signups drop column if exists can_watch_kids;
+
+-- Added after initial launch: which temple session time the person has
+-- reserved, so rides can be matched to the right session.
+alter table public.signups add column if not exists reservation_time text;
 
 alter table public.signups enable row level security;
 
