@@ -88,3 +88,9 @@ $$;
 
 revoke all on function public.get_ward_counts() from public;
 grant execute on function public.get_ward_counts() to anon, authenticated;
+
+-- Force Supabase's API layer (PostgREST) to immediately pick up the
+-- schema/grant changes above, instead of waiting for its own cache to
+-- refresh -- without this, you can see spurious "permission denied"
+-- errors for a short window right after running this script.
+notify pgrst, 'reload schema';
