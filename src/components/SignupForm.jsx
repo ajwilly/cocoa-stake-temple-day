@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { api } from '../lib/api'
 import { UNITS, C, serif } from '../lib/theme'
 import { label, input, field } from '../lib/formStyles'
 
@@ -28,8 +28,8 @@ export default function SignupForm({ onSaved }) {
 
   async function insertOnce(row) {
     try {
-      const { error: insertError } = await supabase.from('signups').insert(row)
-      return insertError ?? null
+      await api.signup(row)
+      return null
     } catch (thrown) {
       return thrown
     }
@@ -72,7 +72,7 @@ export default function SignupForm({ onSaved }) {
     // before giving up, so a one-second blip doesn't cost someone their
     // sign-up.
     let failure = await insertOnce(row)
-    if (failure) {
+    if (failure && !(failure.status >= 400 && failure.status < 500)) {
       await new Promise((resolve) => setTimeout(resolve, 1200))
       failure = await insertOnce(row)
     }
@@ -81,7 +81,7 @@ export default function SignupForm({ onSaved }) {
 
     if (failure) {
       console.error('Sign-up failed after retry:', failure)
-      const detail = failure?.message || failure?.error_description || String(failure)
+      const detail = failure?.message || String(failure)
       setError(`Couldn't save your sign-up. Please try again. (${detail})`)
       return
     }

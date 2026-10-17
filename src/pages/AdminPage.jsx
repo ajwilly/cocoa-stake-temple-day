@@ -1,21 +1,18 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { api } from '../lib/api'
 import { C } from '../lib/theme'
 import AdminLogin from '../components/AdminLogin'
 import AdminRoster from '../components/AdminRoster'
 
 export default function AdminPage() {
-  const [session, setSession] = useState(undefined)
+  // undefined = checking, true = signed in, false = signed out
+  const [signedIn, setSignedIn] = useState(undefined)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session))
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
-    })
-    return () => listener.subscription.unsubscribe()
+    api.session().then(() => setSignedIn(true), () => setSignedIn(false))
   }, [])
 
-  if (session === undefined) {
+  if (signedIn === undefined) {
     return (
       <div style={{ minHeight: '100vh', background: C.porcelain, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: C.mute }}>Loading…</p>
@@ -23,5 +20,9 @@ export default function AdminPage() {
     )
   }
 
-  return session ? <AdminRoster /> : <AdminLogin />
+  return signedIn ? (
+    <AdminRoster onLoggedOut={() => setSignedIn(false)} />
+  ) : (
+    <AdminLogin onLoggedIn={() => setSignedIn(true)} />
+  )
 }

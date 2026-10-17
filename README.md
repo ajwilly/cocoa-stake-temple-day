@@ -4,124 +4,80 @@ Carpool sign-up site for Cocoa Stake Temple Day at the Fort Lauderdale Florida
 Temple, Saturday, November 14, 2026. Public sign-up + counts-only board at
 `/`, full roster for stake leaders at `/admin`.
 
-Runs entirely on free tiers: **Vite + React** (static site), **Supabase**
-(Postgres + auth), **Netlify** (hosting). No credit card required anywhere in
-this walkthrough.
-
----
+Runs entirely on Netlify's free tier: **Vite + React** (static site) and one
+**Netlify Function** (`netlify/functions/api.mjs`) that stores sign-ups in
+**Netlify Blobs**. No other accounts, no database to pause or run out of
+project slots, no credit card.
 
 ## 1. Add the temple photo
 
 Put your photo at `public/temple.jpg`. If it's missing, the hero just shows a
-navy/sky gradient block instead of a broken image — the site still works.
+navy/sky gradient block instead of a broken image.
 
-## 2. Create the free Supabase project
+## 2. Deploy to Netlify
 
-1. Go to supabase.com and sign up (GitHub login is easiest). No card needed
-   for the free tier.
-2. Click **New project**. Pick any name (e.g. "cocoa-stake-temple-day"), set
-   a database password (save it somewhere — you likely won't need it again,
-   Supabase manages the connection for you), pick the region closest to you,
-   and click **Create new project**. Wait ~1-2 minutes for it to spin up.
-3. In the left sidebar go to **SQL Editor** → **New query**. Open
-   `supabase/schema.sql` from this repo, copy the whole file, paste it into
-   the editor, and click **Run**. This creates the `signups` table, locks it
-   down with row-level security, and creates the `get_ward_counts()` function
-   the public page uses.
-4. Go to **Project Settings** (gear icon) → **API**. Copy:
-   - **Project URL** → this is `VITE_SUPABASE_URL`
-   - **anon / public** key → this is `VITE_SUPABASE_ANON_KEY`
-   (The anon key is meant to be public/embedded in frontend code — it's safe
-   because every permission it has is enforced by the RLS policies in
-   `schema.sql`, not by keeping the key secret.)
+1. Connect this GitHub repo to a Netlify site (**Add new site → Import an
+   existing project**). `netlify.toml` already sets the build command
+   (`npm run build`), publish folder (`dist`) and functions folder.
+2. In **Site configuration → Environment variables**, add three variables
+   (set them for all scopes, including Functions):
 
-### Create your 2–3 admin accounts
+   | Variable | What it is |
+   |---|---|
+   | `LEADER_USERNAME` | The stake leader username (not case-sensitive) |
+   | `LEADER_PASSWORD` | The stake leader password |
+   | `SESSION_SECRET` | A long random string (40+ characters). Make one up; nobody ever types it. Changing it logs every leader out. |
 
-1. In the Supabase dashboard, go to **Authentication** → **Users** → **Add
-   user** → **Create new user**.
-2. Enter each stake leader's email and a temporary password, check **Auto
-   Confirm User** (so they don't need to click an email link), and click
-   **Create user**. Repeat for each admin.
-3. Share the email + temporary password with each leader; they can log in at
-   `yoursite.netlify.app/admin`. There's no self-serve password reset flow
-   built into this app — if someone needs a new password, reset it from the
-   same **Authentication → Users** screen in Supabase.
+3. Trigger a deploy (**Deploys → Trigger deploy → Deploy site**). Env vars
+   only apply to deploys made after you add them.
 
-## 3. Run it locally (optional, to test before deploying)
+To change the leader login later, edit `LEADER_USERNAME` / `LEADER_PASSWORD`
+in Netlify and redeploy. There is no password in the code or the repo.
+
+## 3. Run it locally (optional)
 
 ```bash
 npm install
-cp .env.example .env.local
-# edit .env.local and paste in your Project URL + anon key
-npm run dev
+npx netlify dev     # runs the site + function + a local Blobs store
 ```
 
-Visit `http://localhost:5173` for the public page and
-`http://localhost:5173/admin` for the login screen.
+Put `LEADER_USERNAME`, `LEADER_PASSWORD` and `SESSION_SECRET` in a `.env`
+file first (see `.env.example`; `.env` is git-ignored). Use throwaway test
+values, not the real ones.
 
-## 4. Deploy to Netlify (free tier)
-
-**Easiest path — connect to GitHub:**
-
-1. Push this project to a new GitHub repository (Netlify deploys from git,
-   which also gives you automatic redeploys whenever you push changes).
-2. Go to app.netlify.com and sign up free (GitHub login works, no card
-   needed).
-3. Click **Add new site** → **Import an existing project** → **Deploy with
-   GitHub**, authorize Netlify, and pick your repo.
-4. Build settings should auto-detect from `package.json`, but confirm:
-   - **Build command:** `npm run build`
-   - **Publish directory:** `dist`
-5. Before clicking deploy, expand **Environment variables** and add:
-   - `VITE_SUPABASE_URL` = your Project URL
-   - `VITE_SUPABASE_ANON_KEY` = your anon key
-6. Click **Deploy site**. After the build finishes you'll get a URL like
-   `random-name-123.netlify.app` — you can rename it under **Site
-   configuration → Change site name**.
-
-The `public/_redirects` file in this repo (`/* /index.html 200`) is already
-set up so that `/admin` loads correctly instead of a Netlify 404 — Netlify
-needs this because React Router handles that route client-side.
-
-**Alternative — drag and drop (no GitHub required):**
-
-1. Run `npm run build` locally with `.env.local` filled in (env vars get
-   baked into the build at this step, so this only works if you set them
-   before building).
-2. Go to app.netlify.com → **Add new site** → **Deploy manually**, then drag
-   the generated `dist/` folder onto the page.
-3. Note: with this method you'd need to rebuild and re-drag every time you
-   change the site. The GitHub method above is much easier to maintain.
-
-## Free tier limits (so you know you're nowhere close)
-
-- **Supabase free tier:** 500 MB database storage, 5 GB bandwidth/month, up
-  to 50,000 monthly active users for auth, project pauses after 1 week of no
-  API activity (visiting the site or admin panel wakes it right back up in a
-  few seconds). A stake with a few hundred sign-ups uses a tiny fraction of a
-  percent of the storage limit.
-- **Netlify free tier:** 100 GB bandwidth/month, 300 build minutes/month.
-  This is a small static site with no images beyond the temple photo, so a
-  single event's traffic won't come close.
+`npm test` runs the backend's test suite (no network or accounts needed).
 
 ## What's enforced where
 
-- The public page (`/`) can only ever **insert** rows — enforced by
-  PostgreSQL row-level security in `supabase/schema.sql`, not just hidden in
-  the UI. It reads counts exclusively through the `get_ward_counts()`
-  database function, which returns per-ward sums and never a name, phone
-  number, or note — even if you open the browser network tab or call the
-  Supabase REST API directly.
-- The admin page (`/admin`) requires a Supabase-authenticated session before
-  it can `select` or `delete` rows — also enforced by RLS, not client code.
+All of this is enforced in `netlify/lib/api.mjs` on the server, not just
+hidden in the UI:
+
+- The public page can only **create** sign-ups and read **per-ward counts**.
+  `/api/counts` returns sums only — never a name, phone number or note.
+- `/api/roster` and delete require a leader session: an `HttpOnly`,
+  `Secure`, `SameSite=Strict` cookie signed with `SESSION_SECRET`, valid
+  12 hours.
+- Login locks out a connection after 8 wrong attempts for 15 minutes.
+  Sign-ups are limited to 30 per hour per connection.
+- Sign-ups are validated server-side (ward must be on the list, seat and
+  group sizes 1–20, text lengths capped).
+
+## Free tier limits
+
+- **Netlify:** 100 GB bandwidth/month, 300 build minutes/month, 125k
+  function requests/month, plus Blobs storage. A stake's worth of sign-ups
+  is a tiny fraction of that.
 
 ## Project structure
 
 ```
-supabase/schema.sql      SQL to paste into the Supabase SQL editor (run once)
-src/lib/                 Supabase client, shared theme/colors, form styles, CSV export
-src/components/          SignupForm, WardCountsBoard (public), AdminLogin, AdminRoster
-src/pages/                PublicPage (/), AdminPage (/admin)
-public/temple.jpg         Add your own temple photo here
-public/_redirects         Netlify SPA routing config
+netlify/lib/api.mjs        The whole backend (routes, auth, validation)
+netlify/functions/api.mjs  Wires the backend to Netlify Blobs
+scripts/test-api.mjs       Backend tests (npm test)
+src/lib/api.js             Front-end fetch helpers
+src/lib/                   Theme/colors, form styles, CSV export
+src/components/            SignupForm, WardCountsBoard (public), AdminLogin, AdminRoster
+src/pages/                 PublicPage (/), AdminPage (/admin)
+public/temple.jpg          Your temple photo
+public/_redirects          /api -> function, everything else -> the app
 ```

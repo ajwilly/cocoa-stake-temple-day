@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { api } from '../lib/api'
 import { UNITS, C, serif } from '../lib/theme'
 import { label } from '../lib/formStyles'
 import { downloadCsv, todayEasternDateStamp } from '../lib/csv'
 
-export default function AdminRoster() {
+export default function AdminRoster({ onLoggedOut }) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -13,24 +13,26 @@ export default function AdminRoster() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const { data, error: fetchError } = await supabase
-      .from('signups')
-      .select('*')
-      .order('unit', { ascending: true })
-      .order('created_at', { ascending: true })
-    if (fetchError) setError('Could not load the roster.')
-    else setRows(data ?? [])
+    try {
+      const { rows: data } = await api.roster()
+      setRows(data ?? [])
+    } catch (err) {
+      if (err.status === 401) onLoggedOut()
+      else setError('Could not load the roster.')
+    }
     setLoading(false)
-  }, [])
+  }, [onLoggedOut])
 
   useEffect(() => {
     load()
   }, [load])
 
   async function remove(id) {
-    const { error: deleteError } = await supabase.from('signups').delete().eq('id', id)
-    if (deleteError) {
-      setError('Could not remove that entry.')
+    try {
+      await api.remove(id)
+    } catch (err) {
+      if (err.status === 401) onLoggedOut()
+      else setError('Could not remove that entry.')
       return
     }
     setConfirmId(null)
@@ -38,7 +40,12 @@ export default function AdminRoster() {
   }
 
   async function logout() {
-    await supabase.auth.signOut()
+    try {
+      await api.logout()
+    } catch {
+      // cookie is cleared server-side; fall through to the login screen either way
+    }
+    onLoggedOut()
   }
 
   const drivers = rows.filter((r) => r.role === 'driver')

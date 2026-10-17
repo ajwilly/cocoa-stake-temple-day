@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { api } from '../lib/api'
 import { TEMPLE_PHOTO, C, serif, sans } from '../lib/theme'
 import SignupForm from '../components/SignupForm'
 import WardCountsBoard from '../components/WardCountsBoard'
@@ -12,18 +12,11 @@ export default function PublicPage() {
   const [imgOk, setImgOk] = useState(true)
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase.rpc('get_ward_counts')
-    if (!error && data) {
-      const byUnit = Object.fromEntries(
-        data.map((row) => [
-          row.unit,
-          {
-            seatsOffered: Number(row.seats_offered) || 0,
-            ridersNeedingSeats: Number(row.riders_needing_seats) || 0,
-          },
-        ])
-      )
+    try {
+      const { counts: byUnit } = await api.counts()
       setCounts(byUnit)
+    } catch (err) {
+      console.error('Could not load counts:', err)
     }
     setLoading(false)
   }, [])

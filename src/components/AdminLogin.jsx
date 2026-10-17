@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { api } from '../lib/api'
 import { C, serif } from '../lib/theme'
 import { label, input, field } from '../lib/formStyles'
 
-export default function AdminLogin() {
-  const [email, setEmail] = useState('')
+export default function AdminLogin({ onLoggedIn }) {
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -13,9 +13,13 @@ export default function AdminLogin() {
     e.preventDefault()
     setError('')
     setBusy(true)
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    try {
+      await api.login(username, password)
+      onLoggedIn()
+    } catch (err) {
+      setError(err.status === 401 || err.status === 429 || err.status === 503 ? err.message : 'Could not sign in. Please try again.')
+    }
     setBusy(false)
-    if (signInError) setError('Incorrect email or password.')
   }
 
   return (
@@ -28,8 +32,8 @@ export default function AdminLogin() {
         <p style={{ margin: '0 0 20px', fontSize: 14, color: C.mute }}>Cocoa Stake Temple Day roster</p>
 
         <div style={field}>
-          <label style={label}>Email</label>
-          <input style={input} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
+          <label style={label}>Username</label>
+          <input style={input} type="text" required value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" />
         </div>
         <div style={field}>
           <label style={label}>Password</label>
